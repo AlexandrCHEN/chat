@@ -1,10 +1,49 @@
+import { useState } from 'react'
+import { GreenApiError, checkWhatsapp } from '../../api/greenApi'
+import { ChatList } from '../ChatList/ChatList'
+import { ChatWindow } from '../ChatWindow/ChatWindow'
+import { NewChatForm } from '../NewChatForm/NewChatForm'
+import { toChatId } from '../../lib/phone'
+import type { Credentials, Chat } from '../../types'
 import styles from './Messenger.module.css'
 
 type MessengerProps = {
+  apiUrl: string
+  credentials: Credentials
   onLogout: () => void
 }
 
-export function Messenger({ onLogout }: MessengerProps) {
+export function Messenger({ apiUrl, credentials, onLogout }: MessengerProps) {
+  const [chats, setChats] = useState<Chat[]>([])
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
+  const selectedChat = chats.find((chat) => chat.chatId === selectedChatId) ?? null
+
+  async function handleCreateChat(phoneNumber: string): Promise<string | null> {
+    const chatId = toChatId(phoneNumber)
+    const existingChat = chats.find((chat) => chat.chatId === chatId)
+
+    if (existingChat) {
+      setSelectedChatId(existingChat.chatId)
+      return null
+    }
+
+    try {
+      const existsWhatsapp = await checkWhatsapp(apiUrl, credentials, chatId)
+
+      if (!existsWhatsapp) {
+        return 'У этого номера нет WhatsApp'
+      }
+    } catch (error) {
+      return getRequestErrorMessage(error)
+    }
+
+    const chat: Chat = { chatId, phoneNumber, messages: [] }
+
+    setChats((currentChats) => [...currentChats, chat])
+    setSelectedChatId(chatId)
+    return null
+  }
+
   return (
     <main className={styles.messenger}>
       <aside className={styles.sidebar}>
@@ -14,13 +53,22 @@ export function Messenger({ onLogout }: MessengerProps) {
             Выйти
           </button>
         </header>
+        <NewChatForm onSubmit={handleCreateChat} />
         <div className={styles.sidebarContent}>
-          <p className={styles.placeholder}>Нет чатов</p>
+          <ChatList chats={chats} selectedChatId={selectedChatId} onSelect={setSelectedChatId} />
         </div>
       </aside>
       <section className={styles.chatArea} aria-label="Область чата">
-        <p className={styles.placeholder}>Выберите чат</p>
+        <ChatWindow chat={selectedChat} />
       </section>
     </main>
   )
+}
+
+function getRequestErrorMessage(error: unknown): string {
+  if (error instanceof GreenApiError) {
+    return error.message
+  }
+
+  return 'Не удалось проверить номер телефона. Попробуйте снова.'
 }

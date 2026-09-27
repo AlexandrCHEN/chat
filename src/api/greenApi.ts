@@ -24,15 +24,40 @@ export async function getStateInstance(apiUrl: string, credentials: Credentials)
   return response.stateInstance
 }
 
+export async function checkWhatsapp(
+  apiUrl: string,
+  credentials: Credentials,
+  chatId: string,
+): Promise<boolean> {
+  const response = await request(apiUrl, credentials, 'checkWhatsapp', {
+    body: { chatId },
+  })
+
+  if (!isRecord(response) || typeof response.existsWhatsapp !== 'boolean') {
+    throw new GreenApiError('GREEN-API вернул неожиданный ответ.', 'response')
+  }
+
+  return response.existsWhatsapp
+}
+
+type RequestOptions = {
+  body?: Record<string, string>
+}
+
 async function request(
   apiUrl: string,
   credentials: Credentials,
   method: string,
+  options?: RequestOptions,
 ): Promise<unknown> {
   let response: Response
 
   try {
-    response = await fetch(buildUrl(apiUrl, credentials, method))
+    response = await fetch(buildUrl(apiUrl, credentials, method), {
+      method: options?.body ? 'POST' : 'GET',
+      headers: options?.body ? { 'Content-Type': 'application/json' } : undefined,
+      body: options?.body ? JSON.stringify(options.body) : undefined,
+    })
   } catch {
     throw new GreenApiError('Не удалось подключиться к GREEN-API.', 'network')
   }

@@ -30,19 +30,13 @@
 }
 
 .sidebarContent {
-  display: grid;
   flex: 1;
-  place-items: center;
+  overflow-y: auto;
 }
 
 .chatArea {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-width: 0;
-  place-items: center;
-}
-
-.placeholder {
-  margin: 0;
-  color: #6e7781;
 }

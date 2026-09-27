@@ -49,7 +49,7 @@ function App() {
     return <LoginForm onSubmit={handleLogin} />
   }
 
-  return <Messenger onLogout={handleLogout} />
+  return <Messenger apiUrl={apiUrl} credentials={credentials} onLogout={handleLogout} />
 }
 
 function getStateMessage(stateInstance: string): string {
