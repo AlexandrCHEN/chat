@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
+import { Check, Checks, WarningCircle } from '@phosphor-icons/react'
 import { formatPhone } from '../../lib/phone'
 import type { Chat, Credentials, Message, MessageStatus } from '../../types'
 import { MessageInput } from '../MessageInput/MessageInput'
@@ -6,26 +7,27 @@ import styles from './ChatWindow.module.css'
 
 const timeFormatter = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' })
 
-const statusContent: Record<MessageStatus, { icon: string; label: string; className: string }> = {
-  sent: { icon: '✓', label: 'Отправлено', className: styles.status },
-  delivered: { icon: '✓✓', label: 'Доставлено', className: styles.status },
-  read: { icon: '✓✓', label: 'Прочитано', className: `${styles.status} ${styles.statusRead}` },
-  failed: { icon: '!', label: 'Не доставлено', className: `${styles.status} ${styles.statusFailed}` },
-}
+const statusContent = {
+  sent: { icon: <Check size={14} />, label: 'Отправлено', className: styles.status },
+  delivered: { icon: <Checks size={14} />, label: 'Доставлено', className: styles.status },
+  read: { icon: <Checks size={14} />, label: 'Прочитано', className: `${styles.status} ${styles.statusRead}` },
+  failed: { icon: <WarningCircle size={14} />, label: 'Не доставлено', className: `${styles.status} ${styles.statusFailed}` },
+} satisfies Record<MessageStatus, { icon: ReactNode; label: string; className: string }>
 
 type ChatWindowProps = {
   chat: Chat | null
   apiUrl: string
   credentials: Credentials
+  onBack: () => void
   onMessageSent: (chatId: string, message: Message) => void
 }
 
-export function ChatWindow({ chat, apiUrl, credentials, onMessageSent }: ChatWindowProps) {
+export function ChatWindow({ chat, apiUrl, credentials, onBack, onMessageSent }: ChatWindowProps) {
   const lastMessageRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     lastMessageRef.current?.scrollIntoView({ block: 'end' })
-  }, [chat?.chatId, chat?.messages.length])
+  }, [chat?.messages.length])
 
   if (!chat) {
     return <p className={styles.placeholder}>Выберите чат</p>
@@ -33,7 +35,12 @@ export function ChatWindow({ chat, apiUrl, credentials, onMessageSent }: ChatWin
 
   return (
     <>
-      <header className={styles.header}>{formatPhone(chat.phoneNumber)}</header>
+      <header className={styles.header}>
+        <button className={styles.back} type="button" onClick={onBack}>
+          Назад
+        </button>
+        <span>{formatPhone(chat.phoneNumber)}</span>
+      </header>
       <div className={styles.messages} aria-label="Сообщения">
         {chat.messages.length === 0 ? (
           <p className={styles.placeholder}>Сообщений пока нет</p>

@@ -42,6 +42,29 @@
   outline: 2px solid var(--color-accent-focus);
 }
 
+.inputWrapper {
+  position: relative;
+}
+
+.field .tokenInput {
+  padding-right: 44px;
+}
+
+.tokenVisibilityButton {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
 .error {
   margin: -4px 0 0;
   color: var(--color-error);
@@ -63,4 +86,14 @@
 .submit:disabled {
   cursor: not-allowed;
   opacity: 0.55;
+}
+
+@media (max-width: 767px) {
+  .page {
+    padding: 16px;
+  }
+
+  .form {
+    padding: 24px;
+  }
 }

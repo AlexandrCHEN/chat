@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { PaperPlaneRight } from '@phosphor-icons/react'
 import type { KeyboardEvent, SubmitEvent } from 'react'
 import { GreenApiError, sendMessage } from '../../api/greenApi'
 import type { Credentials, Message } from '../../types'
@@ -15,8 +16,17 @@ export function MessageInput({ apiUrl, credentials, chatId, onMessageSent }: Mes
   const [text, setText] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isSending, setIsSending] = useState(false)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const shouldRestoreFocus = useRef(false)
   const message = text.trim()
   const isDisabled = message.length === 0 || isSending
+
+  useEffect(() => {
+    if (!isSending && shouldRestoreFocus.current) {
+      shouldRestoreFocus.current = false
+      textareaRef.current?.focus()
+    }
+  }, [isSending])
 
   async function handleSend() {
     if (isDisabled) {
@@ -37,6 +47,7 @@ export function MessageInput({ apiUrl, credentials, chatId, onMessageSent }: Mes
         status: 'sent',
       })
       setText('')
+      shouldRestoreFocus.current = window.matchMedia('(min-width: 768px)').matches
     } catch (requestError) {
       setError(getRequestErrorMessage(requestError))
     } finally {
@@ -66,6 +77,7 @@ export function MessageInput({ apiUrl, credentials, chatId, onMessageSent }: Mes
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
       <textarea
+        ref={textareaRef}
         className={styles.input}
         value={text}
         onChange={(event) => handleChange(event.target.value)}
@@ -75,14 +87,19 @@ export function MessageInput({ apiUrl, credentials, chatId, onMessageSent }: Mes
         disabled={isSending}
       />
       {error && <p className={styles.error} role="alert">{error}</p>}
-      <button className={styles.submit} type="submit" disabled={isDisabled}>
-        Отправить
+      <button className={styles.submit} type="submit" disabled={isDisabled} aria-label="Отправить">
+        <PaperPlaneRight size={20} />
+        <span>Отправить</span>
       </button>
     </form>
   )
 }
 
 function getRequestErrorMessage(error: unknown): string {
+  if (error instanceof GreenApiError && error.type === 'quota') {
+    return error.message
+  }
+
   if (error instanceof GreenApiError && error.type === 'network') {
     return 'Не удалось подключиться к сервису. Проверьте интернет-соединение и попробуйте снова.'
   }

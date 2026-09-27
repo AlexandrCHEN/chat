@@ -48,3 +48,28 @@
   background: var(--color-warning-background);
   color: var(--color-warning-text);
 }
+
+@media (max-width: 767px) {
+  .sidebar {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .chatArea {
+    display: none;
+  }
+
+  .chatSelected .sidebar {
+    display: none;
+  }
+
+  .chatSelected .chatArea {
+    display: flex;
+    width: 100%;
+  }
+
+  .webhookError {
+    padding: 12px;
+  }
+}

@@ -12,12 +12,13 @@ type MessengerProps = {
   apiUrl: string
   credentials: Credentials
   onLogout: () => void
+  onSessionEnd: () => void
 }
 
-export function Messenger({ apiUrl, credentials, onLogout }: MessengerProps) {
+export function Messenger({ apiUrl, credentials, onLogout, onSessionEnd }: MessengerProps) {
   const [chats, setChats] = useState<Chat[]>([])
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
-  const [hasWebhookError, setHasWebhookError] = useState(false)
+  const [notificationError, setNotificationError] = useState<'webhook' | 'quota' | null>(null)
   const selectedChat = chats.find((chat) => chat.chatId === selectedChatId) ?? null
 
   useEffect(() => {
@@ -60,12 +61,14 @@ export function Messenger({ apiUrl, credentials, onLogout }: MessengerProps) {
           }))
         })
       },
-      onReceiveSuccess: () => setHasWebhookError(false),
-      onWebhookError: () => setHasWebhookError(true),
+      onReceiveSuccess: () => setNotificationError(null),
+      onQuotaError: () => setNotificationError('quota'),
+      onSessionEnd,
+      onWebhookError: () => setNotificationError('webhook'),
     })
 
     return () => controller.abort()
-  }, [apiUrl, credentials])
+  }, [apiUrl, credentials, onSessionEnd])
 
   async function handleCreateChat(phoneNumber: string): Promise<string | null> {
     const existingChat = chats.find((chat) => chat.phoneNumber === phoneNumber)
@@ -104,11 +107,15 @@ export function Messenger({ apiUrl, credentials, onLogout }: MessengerProps) {
     )
   }
 
+  function handleBack() {
+    setSelectedChatId(null)
+  }
+
   return (
-    <main className={styles.messenger}>
+    <main className={`${styles.messenger} ${selectedChat ? styles.chatSelected : ''}`}>
       <aside className={styles.sidebar}>
         <header className={styles.sidebarHeader}>
-          <strong>MAX Chat</strong>
+          <strong>Chat</strong>
           <button className={styles.logout} type="button" onClick={onLogout}>
             Выйти
           </button>
@@ -119,27 +126,21 @@ export function Messenger({ apiUrl, credentials, onLogout }: MessengerProps) {
         </div>
       </aside>
       <section className={styles.chatArea} aria-label="Область чата">
-        {hasWebhookError && (
+        {notificationError && (
           <p className={styles.webhookError} role="alert">
-            Получение сообщений недоступно: очистите адрес webhook в настройках инстанса GREEN-API
+            {notificationError === 'webhook'
+              ? 'Получение сообщений недоступно: очистите адрес webhook в настройках инстанса GREEN-API'
+              : 'Исчерпан месячный лимит тарифа GREEN-API: новые сообщения могут не приходить. Сменить тариф можно в личном кабинете GREEN-API.'}
           </p>
         )}
-        {selectedChat ? (
-          <ChatWindow
-            key={selectedChat.chatId}
-            chat={selectedChat}
-            apiUrl={apiUrl}
-            credentials={credentials}
-            onMessageSent={handleMessageSent}
-          />
-        ) : (
-          <ChatWindow
-            chat={null}
-            apiUrl={apiUrl}
-            credentials={credentials}
-            onMessageSent={handleMessageSent}
-          />
-        )}
+        <ChatWindow
+          key={selectedChat?.chatId}
+          chat={selectedChat}
+          apiUrl={apiUrl}
+          credentials={credentials}
+          onBack={handleBack}
+          onMessageSent={handleMessageSent}
+        />
       </section>
     </main>
   )

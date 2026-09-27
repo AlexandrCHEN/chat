@@ -1,16 +1,19 @@
 import { useState } from 'react'
+import { Eye, EyeSlash } from '@phosphor-icons/react'
 import type { SubmitEvent } from 'react'
 import type { Credentials } from '../../types'
 import styles from './LoginForm.module.css'
 
 type LoginFormProps = {
   onSubmit: (credentials: Credentials) => Promise<string | null>
+  initialError?: string | null
 }
 
-export function LoginForm({ onSubmit }: LoginFormProps) {
+export function LoginForm({ onSubmit, initialError = null }: LoginFormProps) {
   const [idInstance, setIdInstance] = useState('')
   const [apiTokenInstance, setApiTokenInstance] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [isTokenVisible, setIsTokenVisible] = useState(false)
+  const [error, setError] = useState<string | null>(initialError)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const isDisabled = idInstance.length === 0 || apiTokenInstance.trim().length === 0 || isSubmitting
@@ -55,13 +58,24 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
         </label>
         <label className={styles.field}>
           <span>apiTokenInstance</span>
-          <input
-            type="password"
-            value={apiTokenInstance}
-            onChange={(event) => setApiTokenInstance(event.target.value)}
-            autoComplete="off"
-            disabled={isSubmitting}
-          />
+          <span className={styles.inputWrapper}>
+            <input
+              className={styles.tokenInput}
+              type={isTokenVisible ? 'text' : 'password'}
+              value={apiTokenInstance}
+              onChange={(event) => setApiTokenInstance(event.target.value)}
+              autoComplete="off"
+              disabled={isSubmitting}
+            />
+            <button
+              className={styles.tokenVisibilityButton}
+              type="button"
+              onClick={() => setIsTokenVisible((visible) => !visible)}
+              aria-label={isTokenVisible ? 'Скрыть токен' : 'Показать токен'}
+            >
+              {isTokenVisible ? <EyeSlash size={20} /> : <Eye size={20} />}
+            </button>
+          </span>
         </label>
         {error && <p className={styles.error} role="alert">{error}</p>}
         <button className={styles.submit} type="submit" disabled={isDisabled}>

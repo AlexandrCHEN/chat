@@ -7,6 +7,8 @@ type PollNotificationsOptions = {
   onMessage: (chatId: string, message: Message) => void
   onStatus: (idMessage: string, status: MessageStatus) => void
   onReceiveSuccess: () => void
+  onQuotaError: () => void
+  onSessionEnd: () => void
   onWebhookError: () => void
   signal: AbortSignal
 }
@@ -17,6 +19,8 @@ export async function pollNotifications({
   onMessage,
   onStatus,
   onReceiveSuccess,
+  onQuotaError,
+  onSessionEnd,
   onWebhookError,
   signal,
 }: PollNotificationsOptions): Promise<void> {
@@ -54,6 +58,15 @@ export async function pollNotifications({
 
       if (error instanceof GreenApiError && error.type === 'webhook') {
         onWebhookError()
+      }
+
+      if (error instanceof GreenApiError && error.type === 'quota') {
+        onQuotaError()
+      }
+
+      if (error instanceof GreenApiError && error.type === 'http' && (error.status === 401 || error.status === 403)) {
+        onSessionEnd()
+        return
       }
 
       await waitForRetry(signal)

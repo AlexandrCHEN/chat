@@ -8,6 +8,7 @@
 }
 
 .input {
+  min-width: 0;
   min-height: 42px;
   resize: vertical;
   padding: 10px 11px;
@@ -31,6 +32,9 @@
 }
 
 .submit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   align-self: end;
   min-height: 42px;
   padding: 0 16px;
@@ -46,4 +50,14 @@
 .submit:disabled {
   cursor: not-allowed;
   opacity: 0.55;
+}
+
+@media (max-width: 767px) {
+  .form {
+    padding: 12px;
+  }
+
+  .submit span {
+    display: none;
+  }
 }

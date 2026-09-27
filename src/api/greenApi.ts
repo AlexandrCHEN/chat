@@ -1,6 +1,6 @@
 import type { Credentials, Message, MessageStatus } from '../types'
 
-type GreenApiErrorType = 'network' | 'http' | 'response' | 'webhook'
+type GreenApiErrorType = 'network' | 'http' | 'quota' | 'response' | 'webhook'
 
 export type NotificationEvent =
   | { type: 'message'; chatId: string; message: Message }
@@ -134,6 +134,14 @@ async function request(
   }
 
   if (!response.ok) {
+    if (response.status === 466) {
+      throw new GreenApiError(
+        'Исчерпан месячный лимит тарифа GREEN-API. На бесплатном тарифе Developer можно переписываться не больше чем с 3 чатами в месяц. Сменить тариф можно в личном кабинете GREEN-API.',
+        'quota',
+        response.status,
+      )
+    }
+
     if (response.status === 400 && (await getResponseText(response)).includes('Custom webhook url is set')) {
       throw new GreenApiError('Получение уведомлений недоступно.', 'webhook', response.status)
     }
