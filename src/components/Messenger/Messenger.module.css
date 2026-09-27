@@ -40,3 +40,11 @@
   flex: 1;
   min-width: 0;
 }
+
+.webhookError {
+  margin: 0;
+  padding: 12px 24px;
+  border-bottom: 1px solid #dce1e7;
+  background: #fff3cd;
+  color: #664d03;
+}

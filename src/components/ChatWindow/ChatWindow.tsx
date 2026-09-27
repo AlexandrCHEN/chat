@@ -1,7 +1,16 @@
 import { formatPhone } from '../../lib/phone'
-import type { Chat, Credentials, Message } from '../../types'
+import type { Chat, Credentials, Message, MessageStatus } from '../../types'
 import { MessageInput } from '../MessageInput/MessageInput'
 import styles from './ChatWindow.module.css'
+
+const timeFormatter = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' })
+
+const statusContent: Record<MessageStatus, { icon: string; label: string; className: string }> = {
+  sent: { icon: '✓', label: 'Отправлено', className: styles.status },
+  delivered: { icon: '✓✓', label: 'Доставлено', className: styles.status },
+  read: { icon: '✓✓', label: 'Прочитано', className: `${styles.status} ${styles.statusRead}` },
+  failed: { icon: '!', label: 'Не доставлено', className: `${styles.status} ${styles.statusFailed}` },
+}
 
 type ChatWindowProps = {
   chat: Chat | null
@@ -20,12 +29,24 @@ export function ChatWindow({ chat, apiUrl, credentials, onMessageSent }: ChatWin
       <header className={styles.header}>{formatPhone(chat.phoneNumber)}</header>
       <div className={styles.messages} aria-label="Сообщения">
         {chat.messages.map((message) => (
-          <p
+          <div
             className={message.direction === 'outgoing' ? styles.outgoingMessage : styles.incomingMessage}
             key={message.id}
           >
-            {message.text}
-          </p>
+            <p className={styles.text}>{message.text}</p>
+            <span className={styles.meta}>
+              <time dateTime={new Date(message.timestamp).toISOString()}>{timeFormatter.format(message.timestamp)}</time>
+              {message.direction === 'outgoing' && (
+                <span
+                  className={statusContent[message.status].className}
+                  aria-label={statusContent[message.status].label}
+                  title={statusContent[message.status].label}
+                >
+                  {statusContent[message.status].icon}
+                </span>
+              )}
+            </span>
+          </div>
         ))}
       </div>
       <MessageInput

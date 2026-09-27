@@ -10,17 +10,75 @@
 .messages {
   flex: 1;
   padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .outgoingMessage,
 .incomingMessage {
-  margin: 0 0 12px;
+  max-width: 70%;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 16px;
+  line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+  font-size: 15px;
+}
+
+.outgoingMessage {
+  align-self: flex-end;
+  background: #2188ff;
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+}
+
+.incomingMessage {
+  align-self: flex-start;
+  background: #ffffff;
+  border: 1px solid #dce1e7;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
+}
+
+.text {
+  margin: 0;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
 
-.outgoingMessage {
-  text-align: right;
+.meta {
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.incomingMessage .meta {
+  color: #8a94a0;
+}
+
+.outgoingMessage .meta {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.status {
+  margin-right: 2px;
+  letter-spacing: -2px;
+}
+
+.statusRead {
+  color: #9be7ff;
+}
+
+.statusFailed {
+  color: #ffd1d1;
+  font-weight: 700;
 }
 
 .placeholder {

@@ -3,12 +3,11 @@ export type Credentials = {
   apiTokenInstance: string
 }
 
-export type Message = {
-  id: string
-  direction: 'incoming' | 'outgoing'
-  text: string
-  timestamp: number
-}
+export type MessageStatus = 'sent' | 'delivered' | 'read' | 'failed'
+
+export type Message =
+  | { id: string; direction: 'incoming'; text: string; timestamp: number }
+  | { id: string; direction: 'outgoing'; text: string; timestamp: number; status: MessageStatus }
 
 export type Chat = {
   chatId: string

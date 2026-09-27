@@ -34,6 +34,7 @@ export function MessageInput({ apiUrl, credentials, chatId, onMessageSent }: Mes
         direction: 'outgoing',
         text: message,
         timestamp: Date.now(),
+        status: 'sent',
       })
       setText('')
     } catch (requestError) {
