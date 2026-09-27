@@ -7,6 +7,8 @@
 }
 
 .chat {
+  display: grid;
+  gap: 4px;
   width: 100%;
   padding: 12px;
   border: 0;
@@ -26,6 +28,27 @@
 .placeholder {
   margin: 0;
   padding: 24px 16px;
-  color: #6e7781;
+  color: var(--color-muted);
   text-align: center;
+}
+
+.preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.lastMessage {
+  overflow: hidden;
+  flex: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.time {
+  flex: 0 0 auto;
+  color: var(--color-subtle);
 }

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { formatPhone } from '../../lib/phone'
 import type { Chat, Credentials, Message, MessageStatus } from '../../types'
 import { MessageInput } from '../MessageInput/MessageInput'
@@ -20,6 +21,12 @@ type ChatWindowProps = {
 }
 
 export function ChatWindow({ chat, apiUrl, credentials, onMessageSent }: ChatWindowProps) {
+  const lastMessageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    lastMessageRef.current?.scrollIntoView({ block: 'end' })
+  }, [chat?.chatId, chat?.messages.length])
+
   if (!chat) {
     return <p className={styles.placeholder}>Выберите чат</p>
   }
@@ -28,26 +35,33 @@ export function ChatWindow({ chat, apiUrl, credentials, onMessageSent }: ChatWin
     <>
       <header className={styles.header}>{formatPhone(chat.phoneNumber)}</header>
       <div className={styles.messages} aria-label="Сообщения">
-        {chat.messages.map((message) => (
-          <div
-            className={message.direction === 'outgoing' ? styles.outgoingMessage : styles.incomingMessage}
-            key={message.id}
-          >
-            <p className={styles.text}>{message.text}</p>
-            <span className={styles.meta}>
-              <time dateTime={new Date(message.timestamp).toISOString()}>{timeFormatter.format(message.timestamp)}</time>
-              {message.direction === 'outgoing' && (
-                <span
-                  className={statusContent[message.status].className}
-                  aria-label={statusContent[message.status].label}
-                  title={statusContent[message.status].label}
-                >
-                  {statusContent[message.status].icon}
+        {chat.messages.length === 0 ? (
+          <p className={styles.placeholder}>Сообщений пока нет</p>
+        ) : (
+          <>
+            {chat.messages.map((message) => (
+              <div
+                className={message.direction === 'outgoing' ? styles.outgoingMessage : styles.incomingMessage}
+                key={message.id}
+              >
+                <p className={styles.text}>{message.text}</p>
+                <span className={styles.meta}>
+                  <time dateTime={new Date(message.timestamp).toISOString()}>{timeFormatter.format(message.timestamp)}</time>
+                  {message.direction === 'outgoing' && (
+                    <span
+                      className={statusContent[message.status].className}
+                      aria-label={statusContent[message.status].label}
+                      title={statusContent[message.status].label}
+                    >
+                      {statusContent[message.status].icon}
+                    </span>
+                  )}
                 </span>
-              )}
-            </span>
-          </div>
-        ))}
+              </div>
+            ))}
+            <div ref={lastMessageRef} />
+          </>
+        )}
       </div>
       <MessageInput
         apiUrl={apiUrl}

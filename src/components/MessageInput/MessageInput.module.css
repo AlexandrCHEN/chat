@@ -3,29 +3,29 @@
   grid-template-columns: 1fr auto;
   gap: 10px;
   padding: 16px 24px;
-  border-top: 1px solid #dce1e7;
-  background: #ffffff;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .input {
   min-height: 42px;
   resize: vertical;
   padding: 10px 11px;
-  border: 1px solid #c5ccd5;
+  border: 1px solid var(--color-input-border);
   border-radius: 8px;
   color: inherit;
   font: inherit;
 }
 
 .input:focus {
-  border-color: #2188ff;
-  outline: 2px solid rgb(33 136 255 / 20%);
+  border-color: var(--color-accent);
+  outline: 2px solid var(--color-accent-focus);
 }
 
 .error {
   grid-column: 1 / -1;
   margin: 0;
-  color: #b42318;
+  color: var(--color-error);
   font-size: 13px;
   line-height: 1.4;
 }
@@ -36,8 +36,8 @@
   padding: 0 16px;
   border: 0;
   border-radius: 8px;
-  background: #2188ff;
-  color: #ffffff;
+  background: var(--color-accent);
+  color: var(--color-surface);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
