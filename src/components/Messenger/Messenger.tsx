@@ -4,7 +4,7 @@ import { ChatList } from '../ChatList/ChatList'
 import { ChatWindow } from '../ChatWindow/ChatWindow'
 import { NewChatForm } from '../NewChatForm/NewChatForm'
 import { toChatId } from '../../lib/phone'
-import type { Credentials, Chat } from '../../types'
+import type { Credentials, Chat, Message } from '../../types'
 import styles from './Messenger.module.css'
 
 type MessengerProps = {
@@ -44,6 +44,14 @@ export function Messenger({ apiUrl, credentials, onLogout }: MessengerProps) {
     return null
   }
 
+  function handleMessageSent(chatId: string, message: Message) {
+    setChats((currentChats) =>
+      currentChats.map((chat) =>
+        chat.chatId === chatId ? { ...chat, messages: [...chat.messages, message] } : chat,
+      ),
+    )
+  }
+
   return (
     <main className={styles.messenger}>
       <aside className={styles.sidebar}>
@@ -59,7 +67,22 @@ export function Messenger({ apiUrl, credentials, onLogout }: MessengerProps) {
         </div>
       </aside>
       <section className={styles.chatArea} aria-label="Область чата">
-        <ChatWindow chat={selectedChat} />
+        {selectedChat ? (
+          <ChatWindow
+            key={selectedChat.chatId}
+            chat={selectedChat}
+            apiUrl={apiUrl}
+            credentials={credentials}
+            onMessageSent={handleMessageSent}
+          />
+        ) : (
+          <ChatWindow
+            chat={null}
+            apiUrl={apiUrl}
+            credentials={credentials}
+            onMessageSent={handleMessageSent}
+          />
+        )}
       </section>
     </main>
   )

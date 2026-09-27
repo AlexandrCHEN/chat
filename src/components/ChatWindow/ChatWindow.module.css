@@ -9,6 +9,18 @@
 
 .messages {
   flex: 1;
+  padding: 16px 24px;
+}
+
+.outgoingMessage,
+.incomingMessage {
+  margin: 0 0 12px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.outgoingMessage {
+  text-align: right;
 }
 
 .placeholder {

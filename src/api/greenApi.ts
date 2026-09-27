@@ -40,6 +40,23 @@ export async function checkWhatsapp(
   return response.existsWhatsapp
 }
 
+export async function sendMessage(
+  apiUrl: string,
+  credentials: Credentials,
+  chatId: string,
+  text: string,
+): Promise<string> {
+  const response = await request(apiUrl, credentials, 'sendMessage', {
+    body: { chatId, message: text },
+  })
+
+  if (!isRecord(response) || typeof response.idMessage !== 'string') {
+    throw new GreenApiError('GREEN-API вернул неожиданный ответ.', 'response')
+  }
+
+  return response.idMessage
+}
+
 type RequestOptions = {
   body?: Record<string, string>
 }
