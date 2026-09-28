@@ -86,11 +86,11 @@ export function MessageInput({ apiUrl, credentials, chatId, onMessageSent }: Mes
         aria-label="Текст сообщения"
         disabled={isSending}
       />
-      {error && <p className={styles.error} role="alert">{error}</p>}
       <button className={styles.submit} type="submit" disabled={isDisabled} aria-label="Отправить">
         <PaperPlaneRight size={20} />
         <span>Отправить</span>
       </button>
+      {error && <p className={styles.error} role="alert">{error}</p>}
     </form>
   )
 }

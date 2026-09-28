@@ -4,18 +4,19 @@ import { ChatList } from '../ChatList/ChatList'
 import { ChatWindow } from '../ChatWindow/ChatWindow'
 import { NewChatForm } from '../NewChatForm/NewChatForm'
 import { pollNotifications } from '../../lib/notificationPolling'
-import { toChatId } from '../../lib/phone'
+import { fromChatId, toChatId } from '../../lib/phone'
 import type { Credentials, Chat, Message } from '../../types'
 import styles from './Messenger.module.css'
 
 type MessengerProps = {
   apiUrl: string
   credentials: Credentials
+  isLidMode: boolean
   onLogout: () => void
   onSessionEnd: () => void
 }
 
-export function Messenger({ apiUrl, credentials, onLogout, onSessionEnd }: MessengerProps) {
+export function Messenger({ apiUrl, credentials, isLidMode, onLogout, onSessionEnd }: MessengerProps) {
   const [chats, setChats] = useState<Chat[]>([])
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
   const [notificationError, setNotificationError] = useState<'webhook' | 'quota' | null>(null)
@@ -32,7 +33,16 @@ export function Messenger({ apiUrl, credentials, onLogout, onSessionEnd }: Messe
         setChats((currentChats) => {
           const chat = currentChats.find((currentChat) => currentChat.chatId === chatId)
 
-          if (!chat || chat.messages.some((currentMessage) => currentMessage.id === message.id)) {
+          if (!chat) {
+            if (isLidMode) {
+              return currentChats
+            }
+
+            const phoneNumber = fromChatId(chatId)
+            return phoneNumber ? [...currentChats, { chatId, phoneNumber, messages: [message] }] : currentChats
+          }
+
+          if (chat.messages.some((currentMessage) => currentMessage.id === message.id)) {
             return currentChats
           }
 
@@ -68,7 +78,7 @@ export function Messenger({ apiUrl, credentials, onLogout, onSessionEnd }: Messe
     })
 
     return () => controller.abort()
-  }, [apiUrl, credentials, onSessionEnd])
+  }, [apiUrl, credentials, isLidMode, onSessionEnd])
 
   async function handleCreateChat(phoneNumber: string): Promise<string | null> {
     const existingChat = chats.find((chat) => chat.phoneNumber === phoneNumber)
@@ -91,8 +101,19 @@ export function Messenger({ apiUrl, credentials, onLogout, onSessionEnd }: Messe
 
       const chat: Chat = { chatId, phoneNumber, messages: [] }
 
-      setChats((currentChats) => [...currentChats, chat])
-      setSelectedChatId(chatId)
+      setChats((currentChats) => {
+        const existingChat = currentChats.find(
+          (currentChat) => currentChat.phoneNumber === phoneNumber || currentChat.chatId === chatId,
+        )
+
+        if (existingChat) {
+          setSelectedChatId(existingChat.chatId)
+          return currentChats
+        }
+
+        setSelectedChatId(chatId)
+        return [...currentChats, chat]
+      })
       return null
     } catch (error) {
       return getRequestErrorMessage(error)

@@ -48,6 +48,17 @@ export function toChatId(e164: string): string {
   return `${e164.slice(1)}@c.us`
 }
 
+export function fromChatId(chatId: string): string | null {
+  const match = /^(\d+)@c\.us$/.exec(chatId)
+
+  if (!match) {
+    return null
+  }
+
+  const result = parsePhone(`+${match[1]}`)
+  return result.valid ? result.e164 : null
+}
+
 export function formatPhone(e164: string): string {
   return parsePhoneNumberFromString(e164)?.formatInternational() ?? e164
 }

@@ -10,6 +10,7 @@ const configurationError =
 
 function App() {
   const apiUrl = import.meta.env.VITE_GREEN_API_URL?.trim().replace(/\/+$/, '')
+  const isLidMode = import.meta.env.VITE_LID_MODE !== 'false'
   const [credentials, setCredentials] = useState<Credentials | null>(() => loadCredentials())
   const [sessionEndMessage, setSessionEndMessage] = useState<string | null>(null)
 
@@ -58,7 +59,15 @@ function App() {
     return <LoginForm onSubmit={handleLogin} initialError={sessionEndMessage} />
   }
 
-  return <Messenger apiUrl={apiUrl} credentials={credentials} onLogout={handleLogout} onSessionEnd={handleSessionEnd} />
+  return (
+    <Messenger
+      apiUrl={apiUrl}
+      credentials={credentials}
+      isLidMode={isLidMode}
+      onLogout={handleLogout}
+      onSessionEnd={handleSessionEnd}
+    />
+  )
 }
 
 function getStateMessage(stateInstance: string): string {
