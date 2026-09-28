@@ -32,7 +32,7 @@ export async function checkWhatsapp(
   apiUrl: string,
   credentials: Credentials,
   chatId: string,
-): Promise<{ existsWhatsapp: boolean; chatId: string | null }> {
+): Promise<{ existsWhatsapp: boolean; chatId: string | null; phoneNumber: string | null }> {
   const response = await request(apiUrl, credentials, 'checkWhatsapp', {
     body: { chatId },
   })
@@ -44,6 +44,7 @@ export async function checkWhatsapp(
   return {
     existsWhatsapp: response.existsWhatsapp,
     chatId: typeof response.chatId === 'string' ? response.chatId : null,
+    phoneNumber: typeof response.phoneNumber === 'string' && response.phoneNumber !== '' ? response.phoneNumber : null,
   }
 }
 

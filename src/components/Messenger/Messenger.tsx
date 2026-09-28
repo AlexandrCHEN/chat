@@ -89,16 +89,21 @@ export function Messenger({ apiUrl, credentials, isLidMode, onLogout, onSessionE
     }
 
     try {
-      const { existsWhatsapp, chatId } = await checkWhatsapp(apiUrl, credentials, toChatId(phoneNumber))
+      const response = await checkWhatsapp(apiUrl, credentials, toChatId(phoneNumber))
 
-      if (!existsWhatsapp) {
+      if (!response.existsWhatsapp) {
         return 'У этого номера нет WhatsApp'
       }
 
-      if (chatId === null) {
+      if (response.chatId === null) {
         return 'Не удалось создать чат. Попробуйте снова.'
       }
 
+      const phoneChatId =
+        response.phoneNumber !== null && fromChatId(response.phoneNumber) !== null
+          ? response.phoneNumber
+          : toChatId(phoneNumber)
+      const chatId = isLidMode ? response.chatId : phoneChatId
       const chat: Chat = { chatId, phoneNumber, messages: [] }
 
       setChats((currentChats) => {
