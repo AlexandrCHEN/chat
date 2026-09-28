@@ -1,22 +1,37 @@
 import { useState } from 'react'
 import { Eye, EyeSlash } from '@phosphor-icons/react'
 import type { SubmitEvent } from 'react'
+import { ApiUrlDialog } from '../ApiUrlDialog/ApiUrlDialog'
 import type { Credentials } from '../../types'
 import styles from './LoginForm.module.css'
 
 type LoginFormProps = {
+  apiUrl: string | null
+  hasDefaultApiUrl: boolean
+  hasSavedApiUrl: boolean
+  onSaveApiUrl: (apiUrl: string) => void
+  onResetApiUrl: () => void
   onSubmit: (credentials: Credentials) => Promise<string | null>
   initialError?: string | null
 }
 
-export function LoginForm({ onSubmit, initialError = null }: LoginFormProps) {
+export function LoginForm({
+  apiUrl,
+  hasDefaultApiUrl,
+  hasSavedApiUrl,
+  onSaveApiUrl,
+  onResetApiUrl,
+  onSubmit,
+  initialError = null,
+}: LoginFormProps) {
   const [idInstance, setIdInstance] = useState('')
   const [apiTokenInstance, setApiTokenInstance] = useState('')
   const [isTokenVisible, setIsTokenVisible] = useState(false)
   const [error, setError] = useState<string | null>(initialError)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isApiUrlDialogOpen, setIsApiUrlDialogOpen] = useState(false)
 
-  const isDisabled = idInstance.length === 0 || apiTokenInstance.trim().length === 0 || isSubmitting
+  const isDisabled = idInstance.length === 0 || apiTokenInstance.trim().length === 0 || isSubmitting || apiUrl === null
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -78,10 +93,39 @@ export function LoginForm({ onSubmit, initialError = null }: LoginFormProps) {
           </span>
         </label>
         {error && <p className={styles.error} role="alert">{error}</p>}
+        <div className={styles.server}>
+          <span>Сервер GREEN-API: {apiUrl ? getApiUrlHost(apiUrl) : 'не задан'}</span>
+          <button
+            className={styles.serverButton}
+            type="button"
+            onClick={() => setIsApiUrlDialogOpen(true)}
+            disabled={isSubmitting}
+          >
+            {apiUrl ? 'Изменить' : 'Указать'}
+          </button>
+        </div>
         <button className={styles.submit} type="submit" disabled={isDisabled}>
           {isSubmitting ? 'Проверяем…' : 'Войти'}
         </button>
       </form>
+      {isApiUrlDialogOpen && (
+        <ApiUrlDialog
+          apiUrl={apiUrl}
+          hasDefaultApiUrl={hasDefaultApiUrl}
+          hasSavedApiUrl={hasSavedApiUrl}
+          onSave={onSaveApiUrl}
+          onReset={onResetApiUrl}
+          onClose={() => setIsApiUrlDialogOpen(false)}
+        />
+      )}
     </main>
   )
+}
+
+function getApiUrlHost(apiUrl: string): string {
+  try {
+    return new URL(apiUrl).host || apiUrl
+  } catch {
+    return apiUrl
+  }
 }

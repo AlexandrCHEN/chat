@@ -2,21 +2,21 @@ import { useCallback, useState } from 'react'
 import { GreenApiError, getStateInstance } from './api/greenApi'
 import { LoginForm } from './components/LoginForm/LoginForm'
 import { Messenger } from './components/Messenger/Messenger'
+import { clearApiUrl, loadApiUrl, saveApiUrl } from './lib/apiUrlStorage'
 import { clearCredentials, loadCredentials, saveCredentials } from './lib/credentialsStorage'
 import type { Credentials } from './types'
 
-const configurationError =
-  'Не задан адрес GREEN-API. Укажите VITE_GREEN_API_URL в файле .env и перезапустите приложение.'
-
 function App() {
-  const apiUrl = import.meta.env.VITE_GREEN_API_URL?.trim().replace(/\/+$/, '')
+  const defaultApiUrl = import.meta.env.VITE_GREEN_API_URL?.trim().replace(/\/+$/, '') || null
   const isLidMode = import.meta.env.VITE_LID_MODE !== 'false'
   const [credentials, setCredentials] = useState<Credentials | null>(() => loadCredentials())
+  const [savedApiUrl, setSavedApiUrl] = useState<string | null>(() => loadApiUrl())
   const [sessionEndMessage, setSessionEndMessage] = useState<string | null>(null)
+  const apiUrl = savedApiUrl ?? defaultApiUrl
 
   async function handleLogin(nextCredentials: Credentials): Promise<string | null> {
     if (!apiUrl) {
-      return configurationError
+      return 'Укажите адрес сервера GREEN-API.'
     }
 
     try {
@@ -41,22 +41,34 @@ function App() {
     setCredentials(null)
   }
 
+  function handleSaveApiUrl(nextApiUrl: string) {
+    saveApiUrl(nextApiUrl)
+    setSavedApiUrl(nextApiUrl)
+  }
+
+  function handleResetApiUrl() {
+    clearApiUrl()
+    setSavedApiUrl(null)
+  }
+
   const handleSessionEnd = useCallback(() => {
     clearCredentials()
     setCredentials(null)
     setSessionEndMessage('Сеанс завершен: GREEN-API отклонил ID инстанса или API-токен. Войдите снова.')
   }, [])
 
-  if (!apiUrl) {
+  if (!credentials || apiUrl === null) {
     return (
-      <main className="configurationError">
-        <p>{configurationError}</p>
-      </main>
+      <LoginForm
+        apiUrl={apiUrl}
+        hasDefaultApiUrl={defaultApiUrl !== null}
+        hasSavedApiUrl={savedApiUrl !== null}
+        onSaveApiUrl={handleSaveApiUrl}
+        onResetApiUrl={handleResetApiUrl}
+        onSubmit={handleLogin}
+        initialError={sessionEndMessage}
+      />
     )
-  }
-
-  if (!credentials) {
-    return <LoginForm onSubmit={handleLogin} initialError={sessionEndMessage} />
   }
 
   return (
@@ -95,7 +107,7 @@ function getRequestErrorMessage(error: unknown): string {
 
     if (error.type === 'http') {
       if (error.status === 401 || error.status === 403) {
-        return 'Не удалось проверить подключение. Проверьте ID инстанса и API-токен.'
+        return 'Не удалось проверить подключение. Проверьте ID инстанса, API-токен и адрес сервера GREEN-API.'
       }
 
       return 'Сервис GREEN-API временно недоступен. Попробуйте позже.'

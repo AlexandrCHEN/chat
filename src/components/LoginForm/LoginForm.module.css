@@ -72,6 +72,33 @@
   line-height: 1.4;
 }
 
+.server {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: -4px 0 0;
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.serverButton {
+  flex: none;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.serverButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .submit {
   min-height: 42px;
   border: 0;
